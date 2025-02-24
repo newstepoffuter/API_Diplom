@@ -1,0 +1,18 @@
+{
+  "id": 16,
+  "category": {
+    "id": 0,
+    "name": "string"
+  },
+  "name": "Alex",
+  "photoUrls": [
+    "string"
+  ],
+  "tags": [
+    {
+      "id": 0,
+      "name": "string"
+    }
+  ],
+  "status": "available"
+}
