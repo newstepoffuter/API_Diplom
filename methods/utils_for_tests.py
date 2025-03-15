@@ -1,23 +1,19 @@
 class CheckData:
-    def __init__(self):
-        pass
-
-    def check_data_load_pet_name_get_by_status(self, data_load):
-        for i in data_load:
-            if i['id'] == 16 and i['name'] == 'Alex':
+    def check_data_load_pet_name_get_by_status(self, data_load, expected_id, expected_name):
+        for item in data_load:
+            if item['id'] == expected_id and item['name'] == expected_name:
                 return True
+        return False
 
-    def check_data_load_pet_name_get_by_id(self, data_load):
-        if data_load['id'] == 16 and data_load['name'] == 'Alex':
-            return True
+    def check_data_load_pet_name_get_by_id(self, data_load, expected_id, expected_name):
+        return data_load['id'] == expected_id and data_load['name'] == expected_name
 
-    def check_status_order(self, data_load):
-        if data_load['status'] == 'placed' and data_load['complete'] is True:
-            return True
+    def check_status_order(self, data_load, expected_status, expected_complete):
+        return data_load['status'] == expected_status and data_load['complete'] == expected_complete
 
-    def check_delete_status_response(self, data_load, id_order):
-        if data_load['code'] == 200 and data_load['message'] == id_order:
-            return True
+    def check_delete_status_response(self, data_load, expected_code, expected_message):
+        return data_load['code'] == expected_code and data_load['message'] == expected_message
 
 
+# Создаем экземпляр класса
 make_checking_greate_again = CheckData()
