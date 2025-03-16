@@ -18,28 +18,28 @@ class PetAPI:
     def find_pet_by_status(self, status='available'):
         response = self._make_request('GET', 'pet/findByStatus', params={'status': status})
         with open(path_schemas('get_by_status.json')) as file:
-            data_validate = json.load(file)
+            expected_json = json.load(file)  # Схема для валидации
         with allure.step('Получение ответа метода pet.findByStatus'):
-            data_load = response.json()
-        return response, data_load, data_validate
+            response_json = response.json()  # JSON-ответ от API
+        return response, response_json, expected_json
 
     def get_pet_by_id(self, pet_id):
         response = self._make_request('GET', f'pet/{pet_id}')
         with open(path_schemas('get_by_id.json')) as file:
-            data_validate = json.load(file)
+            expected_json = json.load(file)  # Схема для валидации
         with allure.step('Получение ответа метода get.pet'):
-            data_load = response.json()
-        return response, data_load, data_validate
+            response_json = response.json()  # JSON-ответ от API
+        return response, response_json, expected_json
 
     def create_pet(self):
         with open(path_resources('post_pet.json')) as file:
-            data_upload = json.load(file)
+            data_upload = json.load(file)  # Данные для создания питомца
         response = self._make_request('POST', 'pet', json_data=data_upload)
         with open(path_schemas('post_pet.json')) as file:
-            data_validate = json.load(file)
+            expected_json = json.load(file)  # Схема для валидации
         with allure.step('Получение ответа метода post.pet'):
-            data_load = response.json()
-        return response, data_load, data_validate
+            response_json = response.json()  # JSON-ответ от API
+        return response, response_json, expected_json
 
 
 class StoreAPI:
@@ -54,22 +54,22 @@ class StoreAPI:
 
     def create_order(self):
         with open(path_resources('post_store.json')) as file:
-            data_upload = json.load(file)
+            data_upload = json.load(file)  # Данные для создания заказа
         response = self._make_request('POST', 'store/order', json_data=data_upload)
         with allure.step('Получение ответа метода post.order'):
-            data_load = response.json()
-        id_order = data_load["id"]
+            response_json = response.json()  # JSON-ответ от API
+        order_id = response_json["id"]  # ID созданного заказа
         with open(path_schemas('post_store.json')) as file:
-            data_validate = json.load(file)
-        return response, data_load, data_validate, id_order
+            expected_json = json.load(file)  # Схема для валидации
+        return response, response_json, expected_json, order_id
 
-    def delete_order(self, id_order):
-        response = self._make_request('DELETE', f'store/order/{id_order}')
+    def delete_order(self, order_id):
+        response = self._make_request('DELETE', f'store/order/{order_id}')
         with allure.step('Получение ответа метода delete.order'):
-            data_load = response.json()
+            response_json = response.json()  # JSON-ответ от API
         with open(path_schemas('delete_store.json')) as file:
-            data_validate = json.load(file)
-        return response, data_load, data_validate
+            expected_json = json.load(file)  # Схема для валидации
+        return response, response_json, expected_json
 
 
 # Создаем экземпляры классов с базовым URL
