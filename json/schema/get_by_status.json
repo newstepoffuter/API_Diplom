@@ -19,14 +19,15 @@
           }
         },
         "required": [
-          "id"
+          "id",
+          "name"
         ]
       },
       "name": {
         "type": "string"
       },
       "photoUrls": {
-        "type": "array",
+        "type": ["array", "null"],  // Разрешаем null
         "items": {
           "type": "string"
         }

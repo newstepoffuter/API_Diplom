@@ -14,13 +14,7 @@ def load_schema(file_name):
         return json.load(file)
 
 
-def validate_response(response, schema):
-    """
-    Валидирует ответ API и логирует результат.
-    :param response: Ответ от API (объект response из requests).
-    :param schema: Схема для валидации.
-    """
-    # Логируем ответ
+def validate_response_schema(response, schema):
     allure.attach(
         body=json.dumps(response.json(), indent=4, ensure_ascii=True),
         name="Response",
@@ -30,8 +24,6 @@ def validate_response(response, schema):
     logging.info(f"Response URL: {response.request.url}")
     logging.info(f"Response Status Code: {response.status_code}")
     logging.info(f"Response Body: {response.text}")
-
-    # Валидируем ответ
     try:
         validate(instance=response.json(), schema=schema)
         logging.info("Валидация прошла успешно.")

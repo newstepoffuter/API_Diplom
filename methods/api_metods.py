@@ -1,75 +1,83 @@
 import requests
 import json
 import allure
+from Data.data import Pet
 from path import path_resources, path_schemas
 from utils.allure_logging import allure_log
 
 
-class PetAPI:
+class BaseAPI:
     def __init__(self, base_url):
         self.base_url = base_url.rstrip('/')
 
     def _make_request(self, method, endpoint, params=None, json_data=None):
+        """
+        Выполняет HTTP-запрос и возвращает ответ.
+        """
         url = f"{self.base_url}/{endpoint}"
         response = requests.request(method, url, params=params, json=json_data)
         allure_log.logging(response)
         return response
+
+    def _validate_response(self, response, schema_file):
+        """
+        Валидирует ответ API по схеме и возвращает JSON-ответ.
+        """
+        with open(path_schemas(schema_file)) as file:
+            expected_json = json.load(file)
+        with allure.step(f'Получение ответа метода {schema_file}'):
+            response_json = response.json()
+        return response, response_json, expected_json
+
+    def _load_data(self, data_file):
+        """
+        Загружает данные из JSON-файла.
+        """
+        with open(path_resources(data_file)) as file:
+            return json.load(file)
+
+
+class PetAPI(BaseAPI):
+    def __init__(self, base_url):
+        super().__init__(base_url)
 
     def find_pet_by_status(self, status='available'):
         response = self._make_request('GET', 'pet/findByStatus', params={'status': status})
-        with open(path_schemas('get_by_status.json')) as file:
-            expected_json = json.load(file)  # Схема для валидации
-        with allure.step('Получение ответа метода pet.findByStatus'):
-            response_json = response.json()  # JSON-ответ от API
-        return response, response_json, expected_json
+        return self._validate_response(response, 'get_by_status.json')
 
     def get_pet_by_id(self, pet_id):
         response = self._make_request('GET', f'pet/{pet_id}')
-        with open(path_schemas('get_by_id.json')) as file:
-            expected_json = json.load(file)  # Схема для валидации
-        with allure.step('Получение ответа метода get.pet'):
-            response_json = response.json()  # JSON-ответ от API
-        return response, response_json, expected_json
+        return self._validate_response(response, 'get_by_id.json')
 
     def create_pet(self):
-        with open(path_resources('post_pet.json')) as file:
-            data_upload = json.load(file)  # Данные для создания питомца
+        data_upload = self._load_data('post_pet.json')
         response = self._make_request('POST', 'pet', json_data=data_upload)
-        with open(path_schemas('post_pet.json')) as file:
-            expected_json = json.load(file)  # Схема для валидации
-        with allure.step('Получение ответа метода post.pet'):
-            response_json = response.json()  # JSON-ответ от API
-        return response, response_json, expected_json
+        response, response_json, _ = self._validate_response(response, 'post_pet.json')
+        pet = Pet(
+            id=response_json['id'],
+            name=response_json['name'],
+            status=response_json['status'],
+            photoUrls=response_json['photoUrls'],
+            category=response_json.get('category'),
+            tags=response_json.get('tags')
+        )
+        return response, pet
 
 
-class StoreAPI:
+class StoreAPI(BaseAPI):
     def __init__(self, base_url):
-        self.base_url = base_url.rstrip('/')
-
-    def _make_request(self, method, endpoint, params=None, json_data=None):
-        url = f"{self.base_url}/{endpoint}"
-        response = requests.request(method, url, params=params, json=json_data)
-        allure_log.logging(response)
-        return response
+        super().__init__(base_url)
 
     def create_order(self):
-        with open(path_resources('post_store.json')) as file:
-            data_upload = json.load(file)  # Данные для создания заказа
+        data_upload = self._load_data('post_store.json')  # Загружаем данные для создания заказа
         response = self._make_request('POST', 'store/order', json_data=data_upload)
-        with allure.step('Получение ответа метода post.order'):
-            response_json = response.json()  # JSON-ответ от API
-        order_id = response_json["id"]  # ID созданного заказа
-        with open(path_schemas('post_store.json')) as file:
-            expected_json = json.load(file)  # Схема для валидации
+        response, response_json, expected_json = self._validate_response(response, 'post_store.json')
+        order_id = response_json["id"]  # Получаем ID созданного заказа
         return response, response_json, expected_json, order_id
 
     def delete_order(self, order_id):
         response = self._make_request('DELETE', f'store/order/{order_id}')
-        with allure.step('Получение ответа метода delete.order'):
-            response_json = response.json()  # JSON-ответ от API
-        with open(path_schemas('delete_store.json')) as file:
-            expected_json = json.load(file)  # Схема для валидации
-        return response, response_json, expected_json
+        return self._validate_response(response, 'delete_store.json')
 
 
 # Создаем экземпляры классов с базовым URL
