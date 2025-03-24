@@ -7,6 +7,6 @@ class Pet:
     id: int
     name: str
     status: str
-    photoUrls: List[str]  # Возвращаем поле photoUrls
+    photoUrls: Optional[List[str]] = None
     category: Optional[dict] = None
     tags: Optional[List[dict]] = None

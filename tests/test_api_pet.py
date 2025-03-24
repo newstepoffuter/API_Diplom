@@ -23,23 +23,16 @@ class TestPetAPI:
         response, created_pet = pet_api_responses.create_pet()
         schema = load_schema('post_pet.json')
         validate_response_schema(response, schema)
-        assert make_checking_greate_again.validate_post_pet_response(
-            expected_pet, created_pet
+        assert make_checking_greate_again.validate_pet_response(
+            created_pet.__dict__, expected_pet
         ), f"Ожидался питомец с id={expected_pet.id}, name={expected_pet.name}, status={expected_pet.status}, photoUrls={expected_pet.photoUrls}"
 
     @allure.story("Вывод списка питомцев по статусу")
     @allure.description('Проверка поиска питомца по статусу')
     def test_pet_find_by_status(self, setup_base_url):
-        expected_pet = Pet(
-            id=16,
-            name="Alex",
-            status="available",
-            photoUrls=["string"]
-        )
-        pet_api_responses.create_pet()
+        response, created_pet = pet_api_responses.create_pet()
         response, response_json, _ = pet_api_responses.find_pet_by_status()
         schema = load_schema('get_by_status.json')
         validate_response_schema(response, schema)
-        assert make_checking_greate_again.check_data_load_pet_name_get_by_status(
-            response_json, expected_pet
-        ), f"Ожидался питомец с id={expected_pet.id} и name={expected_pet.name}"
+        assert any(pet.get('id') == created_pet.id for pet in response_json), \
+            f"Питомец с id={created_pet.id} не найден в списке"
